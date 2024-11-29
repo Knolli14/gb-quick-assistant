@@ -1,0 +1,8 @@
+.env
+.envrc
+
+
+raw_data/
+*pycache*
+
+
