@@ -79,16 +79,37 @@ class PDFHandler:
             print("No games_list extrcted yet!")
 
 
+    def download_pdfs(self):
+        ''' downloads the games saved in the games_list'''
+
+        # helper function save pdf
+        def _save_pdf(content, title):
+            filepath = os.path.join(RAW_DATA_PATH, title+".pdf")
+
+            if not os.path.exists(filepath):
+                with open(filepath, "wb") as output:
+                    output.write(content)
+
+        for game in self.games_list:
+
+            content = requests.get(game["url"]).content
+            _save_pdf(content, game["title"])
+            print(game["title"], "has been saved.")
+
     # Class Methods
 
     @classmethod
     def from_json(cls):
 
-        with open("games_list.json") as file:
-            games_list = json.load(file)
+        if os.path.exists("games_list.json"):
+            with open("games_list.json") as file:
+                games_list = json.load(file)
 
-        print("Successfully loaded 'games_list.json' into PDFHandler")
-        return cls(games_list=games_list)
+            print("Successfully loaded 'games_list.json' into PDFHandler")
+            return cls(games_list=games_list)
+
+        else:
+            print("No such file!")
 
 if __name__ == "__main__":
 
@@ -97,3 +118,4 @@ if __name__ == "__main__":
     #handler.save_games_list()
 
     handler = PDFHandler.from_json()
+    handler.download_pdfs()
