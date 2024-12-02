@@ -1,52 +1,71 @@
 import requests
 from bs4 import BeautifulSoup
 
-from gb_assistant.params import RAW_DATA_PATH, SEARCH_PAGE_URL
+from gb_assistant.params import *
 
 class PDFHandler:
     ''' Class handling Extraction from web '''
 
     URL = SEARCH_PAGE_URL
 
-    def __init__(self):
-        pass
+    def __init__(self, games_list=None):
+        self.games_list = games_list if games_list else []
 
 
+    def extract_games_list(self, language="English") -> list:
+        ''' Ectract a List of dicts with url and title of Boardgames '''
 
-    def extract_games_list(self):
-        pass
+        # helper function to extract title
+        def _extract_title(url) -> str:
+            ''' Extract title out of link'''
 
-        # loop over all pages
+            title_full = url.split("/")[-1] \
+                            .strip(".pdf")
+
+            return " ".join(title_full.split("-")[1:-1])
+
+        # helper function to get soup and extract tags
+        def _extract_tags(page):
 
             # get soup of a page
-            # find all games tags
+            response = requests.get(PDFHandler.URL + str(page))
+            soup = BeautifulSoup(response.content, "html.parser")
 
+            # find all games tags on a page
+            tag_results = soup.find_all(
+                class_="btn btn-sm btn-secondary mb-1",
+                title="In "+language
+            )
 
+            return tag_results
 
-    def _get_soup(self, page=1):
-        ''' Creates a SoupObject from the Search Page using html.parser '''
+        # loop over all pages
+        for page in range (MAX_SEARCH_PAGE+1):
+            print("Extracting URLs and titles from page:", page)
 
-        # create connection to url
-        response = requests.get(self.URL + str(page))
+            # extract tags
+            tags = _extract_tags(page)
 
-        return BeautifulSoup(response.content, "html.parser")
+            # loop over games in tags
+            for game in tags:
 
-    def _get_all_tags(self, language="English"):
-        ''' Extracts all games of a html soup'''
+                # extract {url, title}
+                url = game.get("href")
+                title = _extract_title(url)
 
-        soup = self._get_soup()
+                # add to self. games_info_list
+                self.games_list.append({
+                    "title": title,
+                    "url": url
+                })
+                print(title, "was added to games_list")
 
-        games = soup.find_all(
-            class_="btn btn-sm btn-secondary mb-1",
-            title="In "+language
-        )
+        print(30*'-',
+              str(len(self.games_list)) + "games have been added in total",
+              sep="\n")
 
-        return games
 
 if __name__ == "__main__":
 
     handler = PDFHandler()
-    soup = handler._get_soup()
-
-    print(type(soup), 30*"-", sep="\n")
-    print(soup)
+    handler.extract_games_list()
