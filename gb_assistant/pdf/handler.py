@@ -1,4 +1,6 @@
 import requests
+import json
+
 from bs4 import BeautifulSoup
 
 from gb_assistant.params import *
@@ -65,7 +67,33 @@ class PDFHandler:
               sep="\n")
 
 
+    def save_games_list(self):
+        ''' saves extracted urls and title locally as json'''
+
+        if self.games_list:
+            with open("games_list.json", "w") as output:
+                output.write(json.dumps(self.games_list))
+            print("Successfully saved to './games_list.json'")
+
+        else:
+            print("No games_list extrcted yet!")
+
+
+    # Class Methods
+
+    @classmethod
+    def from_json(cls):
+
+        with open("games_list.json") as file:
+            games_list = json.load(file)
+
+        print("Successfully loaded 'games_list.json' into PDFHandler")
+        return cls(games_list=games_list)
+
 if __name__ == "__main__":
 
-    handler = PDFHandler()
-    handler.extract_games_list()
+    #handler = PDFHandler()
+    #handler.extract_games_list()
+    #handler.save_games_list()
+
+    handler = PDFHandler.from_json()
