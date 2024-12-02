@@ -6,3 +6,5 @@ raw_data/
 *pycache*
 
 gb_assistant.egg-info/
+
+games_list.json
